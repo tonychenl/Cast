@@ -33,9 +33,4 @@ public class LocalAddress {
 	public byte[] getData(){
 		return data;
 	}
-	
-	public static void main(String[] args) throws Exception{
-		LocalAddress local = new LocalAddress("S00010101010");
-		
-	}
 }

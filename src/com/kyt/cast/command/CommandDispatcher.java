@@ -8,6 +8,8 @@ import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.kyt.cast.Contect;
 
@@ -19,6 +21,16 @@ public class CommandDispatcher {
 	private Context context;
 	private Header header;
 	private byte[] data;
+	
+	private static final Map<Object, Class> map = new HashMap<Object, Class>();
+    
+	/**
+	 * 初始化所有命令及对应的处理类
+	 */
+    static{
+        map.put((byte)154, BroadcastLookupDeviceCommand.class);
+    }
+	
 	private CommandDispatcher(){
 	}
 	
@@ -46,7 +58,7 @@ public class CommandDispatcher {
 			return null;
 		}
 		//获取命令对应的类
-		Class instance = header.getCommandClass();
+		Class instance = getCommandClass(header.getType());
 		if(null != instance){
 			try {
 			    Method getInstance = instance.getMethod("getInstance", null);
@@ -65,7 +77,11 @@ public class CommandDispatcher {
 		return null;
 	}
 	
-	private LocalAddress getLocalAddress() throws Exception{
+	private Class getCommandClass(byte tp) {
+        return map.get(tp);
+    }
+
+    private LocalAddress getLocalAddress() throws Exception{
 		//return new LocalAddress("S00010101010");
 	    return new LocalAddress("Z00010000000");
 	}

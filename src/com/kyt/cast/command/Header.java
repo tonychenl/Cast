@@ -1,8 +1,5 @@
 package com.kyt.cast.command;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.util.Log;
 
 import com.kyt.cast.Contect;
@@ -14,11 +11,6 @@ public class Header {
 	private byte command;
 	private byte type;
 	
-	private static Map<Object, Class> map = new HashMap<Object, Class>();
-	
-	static{
-		map.put((byte)154, BroadcastLookupDeviceCommand.class);
-	}
 	
 	public Header(byte[] data) {
 		try {
@@ -30,9 +22,6 @@ public class Header {
 		}
 	}
 	
-	public Class getCommandClass(){
-		return map.get(command);
-	}
 	
 	public byte[] getHeader() {
 		return header;
@@ -56,25 +45,6 @@ public class Header {
 
 	public void setType(byte type) {
 		this.type = type;
-	}
-
-	public static void main(String[] args) {
-		byte[]  data = new byte[8];
-		System.arraycopy(PACK_HEADER, 0, data, 0, 6);
-		data[6] = (byte)154;
-		data[7] = 1;
-		Header h = new Header(data);
-		
-		try {
-			Class xx = h.getCommandClass();
-			if(null != xx){
-				BroadcastLookupDeviceCommand instance = (BroadcastLookupDeviceCommand) h.getCommandClass().newInstance();
-			}
-		} catch (InstantiationException e) {
-			e.printStackTrace();
-		} catch (IllegalAccessException e) {
-			e.printStackTrace();
-		}
 	}
 
 }
