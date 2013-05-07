@@ -7,7 +7,7 @@ import java.net.InetAddress;
 public class VideoTalkCommand extends Command {
     private static Command command;
     private static final byte CMD = (byte)150;
-    private static final boolean isCalling = false;
+    private static boolean isCalling = false;
     private static InetAddress broadcastIp;
     
     private static final byte CALL      = 1; //£­ºô½Ð
@@ -87,7 +87,10 @@ public class VideoTalkCommand extends Command {
                     System.arraycopy(broadcastIp.getAddress(), 0, response, 58, 4);
                 }
                 break;
-                
+            case M_DATA:
+                isCalling = true;
+                response = new byte[0];
+                break;
             default:
                 response = new byte[0];
                 break;
