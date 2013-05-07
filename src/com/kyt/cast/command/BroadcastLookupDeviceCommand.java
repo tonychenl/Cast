@@ -11,7 +11,6 @@ public class BroadcastLookupDeviceCommand  extends Command{
     private static Command command;
     private static final byte CMD = (byte)154;
 	private byte[] pkgHeader = Header.PACK_HEADER;
-	private static final byte MASTER_CALL = 1;
 	private byte[] lookupDevice = new byte[20];
 	
 	private BroadcastLookupDeviceCommand(){
@@ -30,13 +29,11 @@ public class BroadcastLookupDeviceCommand  extends Command{
     
 	@Override
     protected byte[] doExecute() {
-	    if(null != getData() && getData().length > 0){
-            System.arraycopy(getData(),32,lookupDevice,0,20);
-            Log.v(Contect.TAG, new String(lookupDevice));
-            //如果目标地址是自己则处理
-            if(Arrays.equals(lookupDevice, getLocalAddress().getData())){
-                return getPassivityCallData();
-            }
+        System.arraycopy(getData(),32,lookupDevice,0,20);
+        Log.v(Contect.TAG, new String(lookupDevice));
+        //如果目标地址是自己则处理
+        if(Arrays.equals(lookupDevice, getLocalAddress().getData())){
+            return getPassivityCallData();
         }
         return null;
     }

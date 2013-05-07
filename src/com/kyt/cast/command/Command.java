@@ -11,14 +11,19 @@ public abstract class Command {
 	private InetAddress localIpAddress;
 	private byte[]  data;
 	private Context context;
+	protected static final byte PASSIVE_CALL = 2;
+	protected static final byte MASTER_CALL = 1;
 	
 	public byte[] execute(){
 	    prepare();
-	    return doExecute();
+	    if(null != data && data.length>0 ){
+	        return doExecute();
+	    }
+	    return null;
 	}
 	
-	protected abstract byte[] doExecute();    
 	protected abstract void prepare();
+	protected abstract byte[] doExecute();    
 	
     public Header getHeader() {
 		return header;

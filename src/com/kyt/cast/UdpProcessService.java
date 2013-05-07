@@ -15,8 +15,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
 public class UdpProcessService  extends Service{
-    private static final String BROADCAST_IP = "238.9.9.1";
-    private static final int BROADCAST_PORT = 8302;
     private MulticastSocket broadSocket;
     private DatagramSocket sender;
     private InetAddress broadAddress;
@@ -45,9 +43,9 @@ public class UdpProcessService  extends Service{
         try {
             if(!isRun){
                 isRun = true;
-                broadSocket = new MulticastSocket(BROADCAST_PORT);
+                broadSocket = new MulticastSocket(Contect.BROADCAST_PORT);
                 sender = new DatagramSocket();
-                broadAddress = InetAddress.getByName(BROADCAST_IP);
+                broadAddress = InetAddress.getByName(Contect.BROADCAST_IP);
                 broadSocket.joinGroup(broadAddress);
                 broadSocket.setLoopbackMode(false);
                 getPacket = new GetPacket();
@@ -101,7 +99,7 @@ public class UdpProcessService  extends Service{
                     dispatcher.init(packet.getData(), getApplicationContext());
                     resault = dispatcher.getDate();
                     if(null != resault && resault.length>0){
-                        outPacket = new DatagramPacket(resault, 0, resault.length, packet.getAddress(), BROADCAST_PORT);
+                        outPacket = new DatagramPacket(resault, 0, resault.length, packet.getAddress(), Contect.BROADCAST_PORT);
                         sender.send(outPacket);
                     }
                 } catch (Exception e) {

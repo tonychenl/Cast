@@ -28,7 +28,8 @@ public class CommandDispatcher {
 	 * 初始化所有命令及对应的处理类
 	 */
     static{
-        map.put((byte)154, BroadcastLookupDeviceCommand.class);
+        map.put((byte)154, BroadcastLookupDeviceCommand.class);//广播查询主机
+        map.put((byte)150, BroadcastLookupDeviceCommand.class);//可视对讲
     }
 	
 	private CommandDispatcher(){
