@@ -89,7 +89,7 @@ public class UdpProcessService  extends Service{
      *
      */
     class ProcessPacket extends Thread{
-        private CommandDispatcher dispatcher;
+        private CommandDispatcher dispatcher = CommandDispatcher.getDispatcher();
         private DatagramPacket outPacket;
         DatagramPacket  packet;
         byte[]  resault;
@@ -98,9 +98,7 @@ public class UdpProcessService  extends Service{
             while(isRun){
                 try {
                     packet = queue.take();
-                    packet.getData();
-                    getApplicationContext();
-                    dispatcher = new CommandDispatcher(packet.getData(), getApplicationContext());
+                    dispatcher.init(packet.getData(), getApplicationContext());
                     resault = dispatcher.getDate();
                     if(null != resault && resault.length>0){
                         outPacket = new DatagramPacket(resault, 0, resault.length, packet.getAddress(), BROADCAST_PORT);

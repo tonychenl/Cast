@@ -4,13 +4,18 @@ import android.util.Log;
 
 import com.kyt.cast.Contect;
 
+import java.net.InetAddress;
 import java.util.Arrays;
 
 public class BroadcastLookupDeviceCommand  extends Command{
     private static Command command;
+    private static final byte CMD = (byte)154;
 	private byte[] pkgHeader = Header.PACK_HEADER;
 	private static final byte MASTER_CALL = 1;
 	private byte[] lookupDevice = new byte[20];
+	
+	private BroadcastLookupDeviceCommand(){
+	}
 	
     public static Command getInstance() {
 	    if(command==null){
@@ -48,8 +53,16 @@ public class BroadcastLookupDeviceCommand  extends Command{
 	 * @return
 	 */
 	private byte[] getPassivityCallData() {
-		
-		return null;
+		byte[] tmp = new byte[57];
+		System.arraycopy(pkgHeader, 0, tmp, 0, 6); //包头
+		tmp[6] = CMD; //命令
+		tmp[7] = (byte)2; //命令类型
+		System.arraycopy(getData(), 8, tmp, 8, 20);//主叫方地址
+		System.arraycopy(getData(), 28, tmp, 28, 4);//主叫方IP
+		tmp[32] = (byte)1;//地址个数
+		System.arraycopy(getLocalAddress().getData(), 0, tmp, 33, 20);//解析地址
+        System.arraycopy(getLocalIpAddress().getAddress(), 0, tmp, 53, 4);//解析IP
+		return tmp;
 	}
 
 	/**

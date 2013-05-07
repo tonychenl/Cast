@@ -15,11 +15,25 @@ import android.content.Context;
 import android.util.Log;
 
 public class CommandDispatcher {
+    private static final CommandDispatcher  dispatcher = new CommandDispatcher();
 	private Context context;
 	private Header header;
 	private byte[] data;
-	public CommandDispatcher(byte[] data,Context context) {
-		super();
+	private CommandDispatcher(){
+	}
+	
+	public static CommandDispatcher getDispatcher(){
+	    return dispatcher;
+	}
+	
+	private void clear(){
+	    this.context = null;
+	    this.header = null;
+	    this.data = null;
+	}
+	
+	public void init(byte[] data,Context context) {
+	    clear();
 		this.context = context;
 		this.data = data;
 		this.header = new Header(Arrays.copyOfRange(data, 0, 8));
@@ -42,6 +56,7 @@ public class CommandDispatcher {
 				command.setLocalAddress(getLocalAddress());
 				command.setLocalIpAddress(getLocalIpAddress());
 				command.setData(this.data);
+				command.setContext(this.context);
 				return command.execute();
 			} catch (Exception e) {
 				Log.e(Contect.TAG, e.getMessage());
@@ -51,7 +66,8 @@ public class CommandDispatcher {
 	}
 	
 	private LocalAddress getLocalAddress() throws Exception{
-		return new LocalAddress("S00010101010");
+		//return new LocalAddress("S00010101010");
+	    return new LocalAddress("Z00010000000");
 	}
 	
 	  /**

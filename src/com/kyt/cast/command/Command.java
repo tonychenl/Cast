@@ -1,5 +1,7 @@
 package com.kyt.cast.command;
 
+import android.content.Context;
+
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
@@ -8,6 +10,7 @@ public abstract class Command {
 	private LocalAddress localAddress;
 	private InetAddress localIpAddress;
 	private byte[]  data;
+	private Context context;
 	
 	public byte[] execute(){
 	    prepare();
@@ -40,5 +43,13 @@ public abstract class Command {
     }
     public void setData(byte[] data) {
         this.data = data;
+    }
+
+    public Context getContext() {
+        return context;
+    }
+
+    public void setContext(Context context) {
+        this.context = context;
     }
 }

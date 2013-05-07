@@ -1,5 +1,7 @@
 package com.kyt.cast.command;
 
+import java.util.Arrays;
+
 
 public class LocalAddress {
 	byte    type;
@@ -19,6 +21,7 @@ public class LocalAddress {
 		this.room = address.substring(9, 11).getBytes();
 		this.device = address.substring(11, 12).getBytes()[0];
 		
+		Arrays.fill(data, 0, data.length, (byte)'0');
 		data[0] = type;
 		System.arraycopy(building, 0, data, 1, 4);
 		System.arraycopy(unit, 0, data, 5, 2);
