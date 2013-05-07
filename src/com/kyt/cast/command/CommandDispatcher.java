@@ -1,5 +1,6 @@
 package com.kyt.cast.command;
 
+import java.lang.reflect.Method;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
@@ -16,12 +17,12 @@ import android.util.Log;
 public class CommandDispatcher {
 	private Context context;
 	private Header header;
-	private MulticastSocket socket;
-	public CommandDispatcher(byte[] data,Context context,MulticastSocket socket) {
+	private byte[] data;
+	public CommandDispatcher(byte[] data,Context context) {
 		super();
 		this.context = context;
-		this.socket = socket;
-		this.header = new Header(data);
+		this.data = data;
+		this.header = new Header(Arrays.copyOfRange(data, 0, 8));
 	}
 	
 	public byte[] getDate(){
@@ -34,11 +35,13 @@ public class CommandDispatcher {
 		Class instance = header.getCommandClass();
 		if(null != instance){
 			try {
-				Command command = (Command) instance.newInstance();
+			    Method getInstance = instance.getMethod("getInstance", null);
+			    Command command = (Command) getInstance.invoke(instance, null);
+				//Command command = (Command) instance.newInstance();
 				command.setHeader(header);
 				command.setLocalAddress(getLocalAddress());
 				command.setLocalIpAddress(getLocalIpAddress());
-				command.setSocket(socket);
+				command.setData(this.data);
 				return command.execute();
 			} catch (Exception e) {
 				Log.e(Contect.TAG, e.getMessage());

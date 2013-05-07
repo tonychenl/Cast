@@ -1,39 +1,49 @@
 package com.kyt.cast.command;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.util.Arrays;
+import android.util.Log;
 
 import com.kyt.cast.Contect;
 
-import android.util.Log;
+import java.util.Arrays;
 
 public class BroadcastLookupDeviceCommand  extends Command{
+    private static Command command;
 	private byte[] pkgHeader = Header.PACK_HEADER;
 	private static final byte MASTER_CALL = 1;
-	private DatagramPacket pack;
 	private byte[] lookupDevice = new byte[20];
 	
+    public static Command getInstance() {
+	    if(command==null){
+            synchronized (BroadcastLookupDeviceCommand.class) {
+                if(command==null){
+                    command = new BroadcastLookupDeviceCommand();
+                }
+            }
+        }
+        return command;
+    }
+    
 	@Override
-	public byte[] execute() {
-		pack = new DatagramPacket(new byte[48], 48);
-		try {
-			getSocket().receive(pack);
-			if(null != pack && pack.getLength() > 0){
-				System.arraycopy(pack.getData(),24,lookupDevice,0,20);
-				Log.v(Contect.TAG, new String(pack.getData()));
-				//如果目标地址是自己则处理
-				if(Arrays.equals(lookupDevice, getLocalAddress().getData())){
-					return getPassivityCallData();
-				}
-			}
-		} catch (IOException e) {
-			Log.e(Contect.TAG, "获取数据包出错");
-		}
-		return null;
-	}
+    protected byte[] doExecute() {
+	    if(null != getData() && getData().length > 0){
+            System.arraycopy(getData(),32,lookupDevice,0,20);
+            Log.v(Contect.TAG, new String(lookupDevice));
+            //如果目标地址是自己则处理
+            if(Arrays.equals(lookupDevice, getLocalAddress().getData())){
+                return getPassivityCallData();
+            }
+        }
+        return null;
+    }
 
-	/**
+
+    @Override
+    protected void prepare() {
+        Arrays.fill(lookupDevice, 0, lookupDevice.length, (byte)'0');
+    }
+
+
+    /**
 	 * 被叫
 	 * @return
 	 */
@@ -49,5 +59,4 @@ public class BroadcastLookupDeviceCommand  extends Command{
 	public byte[] getMasterCallData() {
 		return null;
 	}
-
 }

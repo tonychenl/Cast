@@ -7,11 +7,17 @@ public abstract class Command {
 	private Header header;
 	private LocalAddress localAddress;
 	private InetAddress localIpAddress;
-	private MulticastSocket socket;
+	private byte[]  data;
 	
-	public abstract byte[] execute();
+	public byte[] execute(){
+	    prepare();
+	    return doExecute();
+	}
 	
-	public Header getHeader() {
+	protected abstract byte[] doExecute();    
+	protected abstract void prepare();
+	
+    public Header getHeader() {
 		return header;
 	}
 	public void setHeader(Header header) {
@@ -29,12 +35,10 @@ public abstract class Command {
 	public void setLocalIpAddress(InetAddress localIpAddress) {
 		this.localIpAddress = localIpAddress;
 	}
-
-	public MulticastSocket getSocket() {
-		return socket;
-	}
-
-	public void setSocket(MulticastSocket socket) {
-		this.socket = socket;
-	}
+    public byte[] getData() {
+        return data;
+    }
+    public void setData(byte[] data) {
+        this.data = data;
+    }
 }
