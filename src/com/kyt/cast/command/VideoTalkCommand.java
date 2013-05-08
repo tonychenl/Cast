@@ -1,5 +1,6 @@
 package com.kyt.cast.command;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
@@ -82,7 +83,7 @@ public class VideoTalkCommand extends Command {
                     response[8] = BUSY;
                     System.arraycopy(getData(), 9, response, 9, 20);
                     System.arraycopy(getData(), 29, response, 29, 4);
-                    System.arraycopy(getLocalAddress(), 0, response, 33, 20);
+                    System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
                     System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
                 }else{
                     //应答
@@ -93,13 +94,14 @@ public class VideoTalkCommand extends Command {
                     response[8] = REPLY;
                     System.arraycopy(getData(), 9, response, 9, 20);//主叫主地址
                     System.arraycopy(getData(), 29, response, 29, 4);//主叫方ip
-                    System.arraycopy(getLocalAddress(), 0, response, 33, 20);
+                    System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
                     System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
                     response[57]=0;
                     System.arraycopy(broadcastIp.getAddress(), 0, response, 58, 4);
                     
                     isCalling = true;
                     Intent talk = new Intent(getContext(), TalkActivity.class);
+                    talk.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     talk.putExtra("M_ADDR", Arrays.copyOfRange(getData(), 9, 29));
                     talk.putExtra("M_IP", Arrays.copyOfRange(getData(), 29, 33));
                     getContext().startActivity(talk);

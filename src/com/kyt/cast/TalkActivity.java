@@ -30,12 +30,12 @@ public class TalkActivity extends Activity {
         //localSocket = new LocalSocket();
         //localSocket.connect(new LocalSocketAddress("com.kyt.talk"));
         try {
-            DatagramSocket dsocket = new DatagramSocket(8888, InetAddress.getLocalHost());
+            /*DatagramSocket dsocket = new DatagramSocket(8888, InetAddress.getLocalHost());
             ParcelFileDescriptor pfd = ParcelFileDescriptor.fromDatagramSocket(dsocket);
             mediaPlayer.setDataSource(pfd.getFileDescriptor());
             mediaPlayer.setDisplay(sfView.getHolder());
             mediaPlayer.prepare();
-            mediaPlayer.start();
+            mediaPlayer.start();*/
         } catch (Exception e) {
             e.printStackTrace();
         }

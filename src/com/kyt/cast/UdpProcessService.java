@@ -16,7 +16,6 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class UdpProcessService  extends Service{
     private MulticastSocket broadSocket;
-    private DatagramSocket sender;
     private InetAddress broadAddress;
     private GetPacket getPacket;
     private ProcessPacket processPacket;
@@ -44,7 +43,6 @@ public class UdpProcessService  extends Service{
             if(!isRun){
                 isRun = true;
                 broadSocket = new MulticastSocket(Contect.BROADCAST_PORT);
-                sender = new DatagramSocket();
                 broadAddress = InetAddress.getByName(Contect.BROADCAST_IP);
                 broadSocket.joinGroup(broadAddress);
                 broadSocket.setLoopbackMode(false);
@@ -54,6 +52,7 @@ public class UdpProcessService  extends Service{
                 processPacket.start();
             }
         } catch (Exception e) {
+        	Log.e(Contect.TAG, e.getMessage());
         }
     }
     
@@ -77,7 +76,8 @@ public class UdpProcessService  extends Service{
                     Log.e("kyt", "error:"+e);
                 }
             }
-            broadSocket.close();
+            if(!broadSocket.isClosed())
+            	broadSocket.close();
             Log.v("kyt", "stop.....");
         }
     }
@@ -100,13 +100,14 @@ public class UdpProcessService  extends Service{
                     resault = dispatcher.getDate();
                     if(null != resault && resault.length>0){
                         outPacket = new DatagramPacket(resault, 0, resault.length, packet.getAddress(), Contect.BROADCAST_PORT);
-                        sender.send(outPacket);
+                        broadSocket.send(outPacket);
                     }
                 } catch (Exception e) {
                     Log.e("kyt", "处理请求出错!"+e.getMessage());
                 }
             }
-            sender.close();
+            if(!broadSocket.isClosed())
+            	broadSocket.close();
         }
     }
 }

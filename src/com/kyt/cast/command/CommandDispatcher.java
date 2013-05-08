@@ -29,7 +29,7 @@ public class CommandDispatcher {
 	 */
     static{
         map.put((byte)154, BroadcastLookupDeviceCommand.class);//广播查询主机
-        map.put((byte)150, BroadcastLookupDeviceCommand.class);//可视对讲
+        map.put((byte)150, VideoTalkCommand.class);//可视对讲
     }
 	
 	private CommandDispatcher(){
@@ -59,7 +59,7 @@ public class CommandDispatcher {
 			return null;
 		}
 		//获取命令对应的类
-		Class instance = getCommandClass(header.getType());
+		Class instance = getCommandClass(header.getCommand());
 		if(null != instance){
 			try {
 			    Method getInstance = instance.getMethod("getInstance", null);
@@ -83,8 +83,8 @@ public class CommandDispatcher {
     }
 
     private LocalAddress getLocalAddress() throws Exception{
-		//return new LocalAddress("S00010101010");
-	    return new LocalAddress("Z00010000000");
+		return new LocalAddress("S00010101010");
+	    //return new LocalAddress("Z00010000000");
 	}
 	
 	  /**
