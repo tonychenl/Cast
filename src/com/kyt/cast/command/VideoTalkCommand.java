@@ -1,14 +1,26 @@
 package com.kyt.cast.command;
 
-import com.kyt.cast.Contect;
+import android.content.Intent;
+import android.net.LocalServerSocket;
+import android.net.LocalSocket;
 
+import com.kyt.cast.Contect;
+import com.kyt.cast.TalkActivity;
+
+import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetAddress;
+import java.util.Arrays;
 
 public class VideoTalkCommand extends Command {
     private static Command command;
     private static final byte CMD = (byte)150;
     private static boolean isCalling = false;
+    public static boolean isReady = false;
     private static InetAddress broadcastIp;
+    private LocalServerSocket localServer;
+    private LocalSocket       localSocket;
+    private OutputStream      outStream;
     
     private static final byte CALL      = 1; //－呼叫
     private static final byte BUSY      = 2; //－占线
@@ -79,16 +91,21 @@ public class VideoTalkCommand extends Command {
                     response[6] = CMD;
                     response[7] = MASTER_CALL;
                     response[8] = REPLY;
-                    System.arraycopy(getData(), 9, response, 9, 20);
-                    System.arraycopy(getData(), 29, response, 29, 4);
+                    System.arraycopy(getData(), 9, response, 9, 20);//主叫主地址
+                    System.arraycopy(getData(), 29, response, 29, 4);//主叫方ip
                     System.arraycopy(getLocalAddress(), 0, response, 33, 20);
                     System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
                     response[57]=0;
                     System.arraycopy(broadcastIp.getAddress(), 0, response, 58, 4);
+                    
+                    isCalling = true;
+                    Intent talk = new Intent(getContext(), TalkActivity.class);
+                    talk.putExtra("M_ADDR", Arrays.copyOfRange(getData(), 9, 29));
+                    talk.putExtra("M_IP", Arrays.copyOfRange(getData(), 29, 33));
+                    getContext().startActivity(talk);
                 }
                 break;
             case M_DATA:
-                isCalling = true;
                 response = new byte[0];
                 break;
             default:
@@ -96,6 +113,23 @@ public class VideoTalkCommand extends Command {
                 break;
         }
         return response;
+    }
+    
+    /**
+     * 
+     */
+    class ListenTalk extends Thread{
+        @Override
+        public void run() {
+            try {
+                localServer = new LocalServerSocket("com.kyt.talk");
+                isReady = true;
+                localSocket = localServer.accept();
+                outStream = localSocket.getOutputStream();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
