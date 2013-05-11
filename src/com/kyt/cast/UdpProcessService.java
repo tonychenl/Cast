@@ -36,6 +36,12 @@ public class UdpProcessService  extends Service{
         super.onCreate();
         start();
     }
+    
+    @Override
+    public void onDestroy() {
+    	super.onDestroy();
+    	this.stop();
+    }
 
     public UdpProcessService() {
         super();
