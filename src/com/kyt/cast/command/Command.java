@@ -14,16 +14,15 @@ public abstract class Command {
 	protected static final byte PASSIVE_CALL = 2;
 	protected static final byte MASTER_CALL = 1;
 	
-	public byte[] execute(){
+	public void execute() throws Exception{
 	    prepare();
 	    if(null != data && data.length>0 ){
-	        return doExecute();
+	        doExecute();
 	    }
-	    return null;
 	}
 	
-	protected abstract void prepare();
-	protected abstract byte[] doExecute();    
+	protected abstract void prepare() throws Exception;
+	protected abstract void doExecute() throws Exception;    
 	
     public Header getHeader() {
 		return header;

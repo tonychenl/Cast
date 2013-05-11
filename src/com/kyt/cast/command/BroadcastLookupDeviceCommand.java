@@ -3,6 +3,7 @@ package com.kyt.cast.command;
 import android.util.Log;
 
 import com.kyt.cast.Contect;
+import com.kyt.cast.UdpProcessService;
 
 import java.net.InetAddress;
 import java.util.Arrays;
@@ -28,19 +29,26 @@ public class BroadcastLookupDeviceCommand  extends Command{
     }
     
 	@Override
-    protected byte[] doExecute() {
+    protected void doExecute() throws Exception{
         System.arraycopy(getData(),32,lookupDevice,0,20);
         Log.v(Contect.TAG, new String(lookupDevice));
-        //如果目标地址是自己则处理
-        if(Arrays.equals(lookupDevice, getLocalAddress().getData())){
-            return getPassivityCallData();
+        //判断命令来源是主叫方还是被叫方
+        if(getHeader().getType()==MASTER_CALL){
+        	//主叫方
+        	//如果目标地址是自己则处理
+            if(Arrays.equals(lookupDevice, getLocalAddress().getData())){
+                returnLocalInfo();
+            }
+        }else{
+        	//被叫方
+        	
         }
-        return null;
+        
     }
 
 
     @Override
-    protected void prepare() {
+    protected void prepare()  throws Exception{
         Arrays.fill(lookupDevice, 0, lookupDevice.length, (byte)'0');
     }
 
@@ -49,7 +57,7 @@ public class BroadcastLookupDeviceCommand  extends Command{
 	 * 被叫
 	 * @return
 	 */
-	private byte[] getPassivityCallData() {
+	private void returnLocalInfo()  throws Exception{
 		byte[] tmp = new byte[57];
 		System.arraycopy(pkgHeader, 0, tmp, 0, 6); //包头
 		tmp[6] = CMD; //命令
@@ -59,7 +67,11 @@ public class BroadcastLookupDeviceCommand  extends Command{
 		tmp[32] = (byte)1;//地址个数
 		System.arraycopy(getLocalAddress().getData(), 0, tmp, 33, 20);//解析地址
         System.arraycopy(getLocalIpAddress().getAddress(), 0, tmp, 53, 4);//解析IP
-		return tmp;
+        byte[] xx = getLocalIpAddress().getAddress();
+        byte[] xxxx = Arrays.copyOfRange(tmp, 28, 32);
+        //将数据压入发送列队
+        InetAddress x = InetAddress.getByAddress(Arrays.copyOfRange(tmp, 28, 32));
+        UdpProcessService.put(tmp, InetAddress.getByAddress(Arrays.copyOfRange(tmp, 28, 32)), Contect.BROADCAST_PORT);
 	}
 
 	/**

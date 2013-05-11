@@ -1,17 +1,17 @@
 package com.kyt.cast.command;
 
-import android.app.Activity;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.InetAddress;
+import java.util.Arrays;
+
 import android.content.Intent;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
 
 import com.kyt.cast.Contect;
 import com.kyt.cast.TalkActivity;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.util.Arrays;
+import com.kyt.cast.UdpProcessService;
 
 public class VideoTalkCommand extends Command {
     private static Command command;
@@ -57,47 +57,27 @@ public class VideoTalkCommand extends Command {
     }
     
     @Override
-    protected byte[] doExecute() {
+    protected void doExecute() throws Exception{
         //被叫
         if(getHeader().getType()==MASTER_CALL){
-            return getPassivityCallData();
+            doReturnCall();
         }
-        return null;
     }
     
     /**
      * 被叫
      * @return
      */
-    private byte[] getPassivityCallData() {
+    private void doReturnCall() throws Exception{
         byte opType = getData()[8];
-        byte[]  response;
         switch (opType) {
-            case CALL:
+            case CALL: //呼叫请求
                 if(isCalling){
                     //占线
-                    response = new byte[57];
-                    System.arraycopy(Header.PACK_HEADER, 0, response, 0, 6);
-                    response[6] = CMD;
-                    response[7] = MASTER_CALL;
-                    response[8] = BUSY;
-                    System.arraycopy(getData(), 9, response, 9, 20);
-                    System.arraycopy(getData(), 29, response, 29, 4);
-                    System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
-                    System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
+                    buildReturnBusy();
                 }else{
                     //应答
-                    response = new byte[62];
-                    System.arraycopy(Header.PACK_HEADER, 0, response, 0, 6);
-                    response[6] = CMD;
-                    response[7] = MASTER_CALL;
-                    response[8] = REPLY;
-                    System.arraycopy(getData(), 9, response, 9, 20);//主叫主地址
-                    System.arraycopy(getData(), 29, response, 29, 4);//主叫方ip
-                    System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
-                    System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
-                    response[57]=0;
-                    System.arraycopy(broadcastIp.getAddress(), 0, response, 58, 4);
+                    buildReturnReply();
                     
                     isCalling = true;
                     Intent talk = new Intent(getContext(), TalkActivity.class);
@@ -108,14 +88,80 @@ public class VideoTalkCommand extends Command {
                 }
                 break;
             case M_DATA:
-                response = new byte[0];
+            	if(!isCalling){
+            		buildReturnVideoData();
+            	}
                 break;
-            default:
-                response = new byte[0];
-                break;
+            case CANCEL: //通话结束
+            	buildReturnCancel();
+        		isCalling = false;
+            	break;
         }
-        return response;
     }
+
+    /**
+     * 通话数据
+     */
+    private void buildReturnVideoData() throws Exception{
+    	byte[]  response = new byte[10];
+    	UdpProcessService.put(response, InetAddress.getByAddress(Arrays.copyOfRange(getData(), 29, 33)), Contect.BROADCAST_PORT);
+	}
+
+	/**
+     * 通话结束
+     * @param response
+     */
+	private void buildReturnCancel() throws Exception{
+		byte[]  response = new byte[57];
+		System.arraycopy(Header.PACK_HEADER, 0, response, 0, 6);
+		response[6] = CMD;
+		response[7] = PASSIVE_CALL;
+		response[8] = CANCEL;
+		System.arraycopy(getData(), 9, response, 9, 20);//主叫主地址
+		System.arraycopy(getData(), 29, response, 29, 4);//主叫方ip
+		System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
+		System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
+		//将数据压入发送列队
+        UdpProcessService.put(response, InetAddress.getByAddress(Arrays.copyOfRange(getData(), 29, 33)), Contect.BROADCAST_PORT);
+	}
+
+	/**
+	 * 呼叫回应
+	 * @param response
+	 */
+	private void buildReturnReply() throws Exception{
+		byte[] response = new byte[62];
+		System.arraycopy(Header.PACK_HEADER, 0, response, 0, 6);
+		response[6] = CMD;
+		response[7] = MASTER_CALL;
+		response[8] = REPLY;
+		System.arraycopy(getData(), 9, response, 9, 20);//主叫主地址
+		System.arraycopy(getData(), 29, response, 29, 4);//主叫方ip
+		System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
+		System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
+		response[57]=0;
+		System.arraycopy(broadcastIp.getAddress(), 0, response, 58, 4);
+		//将数据压入发送列队
+        UdpProcessService.put(response, InetAddress.getByAddress(Arrays.copyOfRange(getData(), 29, 33)), Contect.BROADCAST_PORT);
+	}
+
+    /**
+     * 构造占线
+     * @param response
+     */
+	private void buildReturnBusy() throws Exception{
+		byte[] response = new byte[57];
+		System.arraycopy(Header.PACK_HEADER, 0, response, 0, 6);
+		response[6] = CMD;
+		response[7] = MASTER_CALL;
+		response[8] = BUSY;
+		System.arraycopy(getData(), 9, response, 9, 20);
+		System.arraycopy(getData(), 29, response, 29, 4);
+		System.arraycopy(getLocalAddress().getData(), 0, response, 33, 20);
+		System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
+		//将数据压入发送列队
+        UdpProcessService.put(response, InetAddress.getByAddress(Arrays.copyOfRange(getData(), 29, 33)), Contect.BROADCAST_PORT);
+	}
     
     /**
      * 

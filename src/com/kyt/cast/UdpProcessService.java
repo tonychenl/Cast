@@ -19,8 +19,11 @@ public class UdpProcessService  extends Service{
     private InetAddress broadAddress;
     private GetPacket getPacket;
     private ProcessPacket processPacket;
+    private OutPacket outPacket;
     private static boolean isRun;
-    public static BlockingQueue<DatagramPacket> queue = new LinkedBlockingQueue<DatagramPacket>();
+    private static BlockingQueue<DatagramPacket> in_queue = new LinkedBlockingQueue<DatagramPacket>();
+    private static BlockingQueue<DatagramPacket> out_queue = new LinkedBlockingQueue<DatagramPacket>();
+    
     private static final int BUFF_SIZE = 512*3;
     
     @Override
@@ -48,8 +51,12 @@ public class UdpProcessService  extends Service{
                 broadSocket.setLoopbackMode(false);
                 getPacket = new GetPacket();
                 processPacket = new ProcessPacket();
+                processPacket.setPriority(7);
+                outPacket = new OutPacket();
+                outPacket.setPriority(Thread.MAX_PRIORITY);
                 getPacket.start();
                 processPacket.start();
+                outPacket.start();
             }
         } catch (Exception e) {
         	Log.e(Contect.TAG, e.getMessage());
@@ -58,6 +65,14 @@ public class UdpProcessService  extends Service{
     
    private void stop(){
        isRun = false;
+   }
+   
+   public static void put(byte[] data,InetAddress addr,int port){
+	   try {
+			out_queue.put(new DatagramPacket(data, data.length, addr, port));
+		} catch (InterruptedException e) {
+			Log.e(Contect.TAG, "加入发送列队出错！");
+		}
    }
     
     /**
@@ -71,7 +86,7 @@ public class UdpProcessService  extends Service{
                     Log.v("kyt", "re....");
                     inPacket = new DatagramPacket(new byte[BUFF_SIZE], BUFF_SIZE);
                     broadSocket.receive(inPacket);
-                    queue.put(inPacket);
+                    in_queue.put(inPacket);
                 } catch (Exception e) {
                     Log.e("kyt", "error:"+e);
                 }
@@ -95,13 +110,10 @@ public class UdpProcessService  extends Service{
         public void run() {
             while(isRun){
                 try {
-                    packet = queue.take();
+                    packet = in_queue.take();
+                    Log.v(Contect.TAG, "process....");
                     dispatcher.init(packet.getData(), getApplicationContext());
-                    resault = dispatcher.getDate();
-                    if(null != resault && resault.length>0){
-                        outPacket = new DatagramPacket(resault, 0, resault.length, packet.getAddress(), Contect.BROADCAST_PORT);
-                        broadSocket.send(outPacket);
-                    }
+                    dispatcher.doDispatcher();
                 } catch (Exception e) {
                     Log.e("kyt", "处理请求出错!"+e.getMessage());
                 }
@@ -109,5 +121,28 @@ public class UdpProcessService  extends Service{
             if(!broadSocket.isClosed())
             	broadSocket.close();
         }
+    }
+    
+    /**
+     * 发送数据包
+     * @author Administrator
+     *
+     */
+    class OutPacket extends Thread{
+    	DatagramPacket  out_packet;
+    	@Override
+    	public void run() {
+    		while(isRun){
+    			try {
+    				out_packet = out_queue.take();
+    				Log.v(Contect.TAG, "send....");
+    				broadSocket.send(out_packet);
+				} catch (Exception e) {
+					Log.e("kyt", "发送请求出错!"+e.getMessage());
+				}
+    		}
+    		 if(!broadSocket.isClosed())
+             	broadSocket.close();
+    	}
     }
 }

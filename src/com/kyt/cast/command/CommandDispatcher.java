@@ -52,11 +52,11 @@ public class CommandDispatcher {
 		this.header = new Header(Arrays.copyOfRange(data, 0, 8));
 	}
 	
-	public byte[] getDate(){
+	public void doDispatcher(){
 		//检查包头是否是XXXCID
 		if(!Arrays.equals(Header.PACK_HEADER, header.getHeader())){
 			Log.v(Contect.TAG, "包头不正确丢弃！");
-			return null;
+			return ;
 		}
 		//获取命令对应的类
 		Class instance = getCommandClass(header.getCommand());
@@ -70,12 +70,11 @@ public class CommandDispatcher {
 				command.setLocalIpAddress(getLocalIpAddress());
 				command.setData(this.data);
 				command.setContext(this.context);
-				return command.execute();
+				command.execute();
 			} catch (Exception e) {
 				Log.e(Contect.TAG, e.getMessage());
 			}
 		}
-		return null;
 	}
 	
 	private Class getCommandClass(byte tp) {

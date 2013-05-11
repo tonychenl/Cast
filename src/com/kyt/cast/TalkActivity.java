@@ -12,15 +12,16 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 
 public class TalkActivity extends Activity {
-    public static boolean isShow = false;
+    public static boolean isTalking = false;
     private LocalSocket localSocket;
+    
+    
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_talk);
         SurfaceView sfView = (SurfaceView) findViewById(R.id.surfaceView1);
         MediaPlayer mediaPlayer = new MediaPlayer();
-        
         //等待视频通讯命令中发送数据线程完成
         /*while(true)
         {
