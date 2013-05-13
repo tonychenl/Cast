@@ -2,10 +2,15 @@ package com.kyt.cast.command;
 
 import android.content.Context;
 
+import java.io.Serializable;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 
-public abstract class Command {
+public abstract class Command  implements Serializable{
+	/**
+	 * serialVersionUID
+	 */
+	private static final long serialVersionUID = -1904098368175675990L;
 	private Header header;
 	private LocalAddress localAddress;
 	private InetAddress localIpAddress;

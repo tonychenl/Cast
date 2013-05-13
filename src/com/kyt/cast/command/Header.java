@@ -1,10 +1,19 @@
 package com.kyt.cast.command;
 
+import java.io.Serializable;
+
+import org.apache.http.entity.SerializableEntity;
+
 import android.util.Log;
 
 import com.kyt.cast.Contect;
 
-public class Header {
+public class Header implements Serializable{
+	/**
+	 * serialVersionUID
+	 */
+	private static final long serialVersionUID = -2977853161893654504L;
+
 	public static final byte[]  PACK_HEADER = "XXXCID".getBytes();
 	
 	private byte[] header = new byte[6];

@@ -14,7 +14,11 @@ import com.kyt.cast.TalkActivity;
 import com.kyt.cast.UdpProcessService;
 
 public class VideoTalkCommand extends Command {
-    private static Command command;
+    /**
+	 * serialVersionUID
+	 */
+	private static final long serialVersionUID = -8021796105434145476L;
+	private static Command command;
     private static final byte CMD = (byte)150;
     private static boolean isCalling = false;
     public static boolean isReady = false;
@@ -84,6 +88,8 @@ public class VideoTalkCommand extends Command {
                     talk.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     talk.putExtra("M_ADDR", Arrays.copyOfRange(getData(), 9, 29));
                     talk.putExtra("M_IP", Arrays.copyOfRange(getData(), 29, 33));
+                    talk.putExtra("L_ADDR", getLocalAddress().getData());
+                    talk.putExtra("L_IP", getLocalIpAddress().getAddress());
                     getContext().startActivity(talk);
                 }
                 break;
