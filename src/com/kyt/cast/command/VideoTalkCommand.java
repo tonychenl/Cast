@@ -1,5 +1,7 @@
 package com.kyt.cast.command;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetAddress;
@@ -8,6 +10,7 @@ import java.util.Arrays;
 import android.content.Intent;
 import android.net.LocalServerSocket;
 import android.net.LocalSocket;
+import android.os.Environment;
 
 import com.kyt.cast.Contect;
 import com.kyt.cast.TalkActivity;
@@ -26,6 +29,8 @@ public class VideoTalkCommand extends Command {
     private LocalServerSocket localServer;
     private LocalSocket       localSocket;
     private OutputStream      outStream;
+    
+    private FileOutputStream out;
     
     private static final byte CALL      = 1; //－呼叫
     private static final byte BUSY      = 2; //－占线
@@ -91,11 +96,15 @@ public class VideoTalkCommand extends Command {
                     talk.putExtra("L_ADDR", getLocalAddress().getData());
                     talk.putExtra("L_IP", getLocalIpAddress().getAddress());
                     getContext().startActivity(talk);
+                    
                 }
                 break;
             case M_DATA:
             	if(!isCalling){
-            		buildReturnVideoData();
+            		//buildReturnVideoData();
+            	}else{
+            		out.write(getData(),76,getData().length-76);
+                	out.flush();
             	}
                 break;
             case CANCEL: //通话结束
@@ -129,6 +138,8 @@ public class VideoTalkCommand extends Command {
 		System.arraycopy(getLocalIpAddress().getAddress(), 0, response, 53, 4);
 		//将数据压入发送列队
         UdpProcessService.put(response, InetAddress.getByAddress(Arrays.copyOfRange(getData(), 29, 33)), Contect.BROADCAST_PORT);
+        
+        out.close();
 	}
 
 	/**
@@ -149,6 +160,9 @@ public class VideoTalkCommand extends Command {
 		System.arraycopy(broadcastIp.getAddress(), 0, response, 58, 4);
 		//将数据压入发送列队
         UdpProcessService.put(response, InetAddress.getByAddress(Arrays.copyOfRange(getData(), 29, 33)), Contect.BROADCAST_PORT);
+        
+        File file = new File(Environment.getExternalStorageDirectory(), "tmp.mp4");
+        out = new FileOutputStream(file,true);
 	}
 
     /**

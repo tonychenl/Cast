@@ -1,18 +1,18 @@
 package com.kyt.cast;
 
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 import android.util.Log;
 
 import com.kyt.cast.command.CommandDispatcher;
-
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
-import java.net.MulticastSocket;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 public class UdpProcessService  extends Service{
     private MulticastSocket broadSocket;
@@ -76,7 +76,7 @@ public class UdpProcessService  extends Service{
    public static void put(byte[] data,InetAddress addr,int port){
 	   try {
 			out_queue.put(new DatagramPacket(data, data.length, addr, port));
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			Log.e(Contect.TAG, "加入发送列队出错！");
 		}
    }
@@ -85,6 +85,7 @@ public class UdpProcessService  extends Service{
      * 获取数据包并加入列队
      */
     class GetPacket extends Thread{
+    	private CommandDispatcher dispatcher = CommandDispatcher.getDispatcher();
         public void run() {
             while(isRun){
                 try {
@@ -109,7 +110,6 @@ public class UdpProcessService  extends Service{
      */
     class ProcessPacket extends Thread{
         private CommandDispatcher dispatcher = CommandDispatcher.getDispatcher();
-        private DatagramPacket outPacket;
         DatagramPacket  packet;
         byte[]  resault;
         @Override
@@ -117,9 +117,11 @@ public class UdpProcessService  extends Service{
             while(isRun){
                 try {
                     packet = in_queue.take();
-                    Log.v(Contect.TAG, "process....");
-                    dispatcher.init(packet.getData(), getApplicationContext());
-                    dispatcher.doDispatcher();
+                    if(null != packet){
+                    	Log.v(Contect.TAG, "process....");
+                        dispatcher.init(packet.getData(), getApplicationContext());
+                        dispatcher.doDispatcher();
+                    }
                 } catch (Exception e) {
                     Log.e("kyt", "处理请求出错!"+e.getMessage());
                 }
@@ -140,9 +142,14 @@ public class UdpProcessService  extends Service{
     	public void run() {
     		while(isRun){
     			try {
+    				//out_packet = out_queue.take();
+    				
     				out_packet = out_queue.take();
-    				Log.v(Contect.TAG, "send....");
-    				broadSocket.send(out_packet);
+    				if(null != out_packet){
+    					Log.v(Contect.TAG, "send....");
+        				broadSocket.send(out_packet);
+    				}
+    				
 				} catch (Exception e) {
 					Log.e("kyt", "发送请求出错!"+e.getMessage());
 				}

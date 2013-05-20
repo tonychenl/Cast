@@ -12,6 +12,7 @@ public abstract class Command  implements Serializable{
 	 */
 	private static final long serialVersionUID = -1904098368175675990L;
 	private Header header;
+	private MulticastSocket socket;
 	private LocalAddress localAddress;
 	private InetAddress localIpAddress;
 	private byte[]  data;
@@ -61,4 +62,12 @@ public abstract class Command  implements Serializable{
     public void setContext(Context context) {
         this.context = context;
     }
+
+	public MulticastSocket getSocket() {
+		return socket;
+	}
+
+	public void setSocket(MulticastSocket socket) {
+		this.socket = socket;
+	}
 }

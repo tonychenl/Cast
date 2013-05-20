@@ -45,7 +45,7 @@ public class TalkActivity extends Activity {
         onLive.schedule(new TimerTask() {
 			@Override
 			public void run() {
-				/*在线确认
+				/*在线确认*/
 				byte[]  opendoor = new byte[61];
 				System.arraycopy(Header.PACK_HEADER, 0, opendoor, 0, 6);
 				opendoor[6] = (byte)150;
@@ -61,7 +61,8 @@ public class TalkActivity extends Activity {
 					Log.v("line", "on line ...");
 				} catch (Exception e) {
 					Log.e("line", e.getMessage());
-				}*/
+				}
+				/*
 				byte[]  opendoor = new byte[57];
 				System.arraycopy(Header.PACK_HEADER, 0, opendoor, 0, 6);
 				opendoor[6] = (byte)150;
@@ -76,7 +77,7 @@ public class TalkActivity extends Activity {
 					Log.v("open", "on open ...");
 				} catch (Exception e) {
 					Log.e("open", e.getMessage());
-				}
+				}*/
 			}
 		},new Date(),5000);
     }
